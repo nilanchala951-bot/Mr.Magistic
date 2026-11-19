@@ -59,6 +59,26 @@ jobs:
             -storepass "$KEYSTORE_PASS" -keypass "$KEYSTORE_PASS" \
             -dname "CN=Mr.Magistic, OU=Dev, O=Nilanchala, L=Bhubaneswar, S=Odisha, C=IN"
 
+          python3 - << 'EOF'
+          from pathlib import Path
+
+          snippet = """
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22',
+                        'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22',
+                        'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+              }
+          }
+          """
+
+          for target in [Path("android/app/build.gradle"), Path("android/build.gradle")]:
+              if target.exists():
+                  content = target.read_text(encoding="utf-8")
+                  if "kotlin-stdlib-jdk7:1.8.22" not in content:
+                      target.write_text(content + "\n" + snippet, encoding="utf-8")
+          EOF
+
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
@@ -84,4 +104,3 @@ jobs:
           name: Mr.Magistic v1.0.${{ github.run_number }}
           make_latest: true
           files: app-release.apk
-          
